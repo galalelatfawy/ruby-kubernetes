@@ -1,0 +1,49 @@
+postgres:
+  image: postgres:9.4.5
+  environment:
+    POSTGRES_USER: drkiq
+    POSTGRES_PASSWORD: yourpassword
+  ports:
+    - '5432:5432'
+  volumes:
+    - drkiq-postgres:/var/lib/postgresql/data
+
+redis:
+  image: redis:3.0.5
+  ports:
+    - '6379:6379'
+  volumes:
+    - drkiq-redis:/var/lib/redis/data
+
+drkiq:
+  build: .
+  links:
+    - postgres
+    - redis
+  volumes:
+    - .:/drkiq
+  ports:
+    - '8000:8000'
+  environment:
+    - SECRET_TOKEN=a9c4853412c560983a37308a54c7164ea77c9b8c47d48b13d59c759d27ee07380e0521b4a480ada9f5de5451679332c23c27ec68dd8967b477f658c04a14c198
+    - WORKER_PROCESSES=1
+    - LISTEN_ON=0.0.0.0:8000
+    - DATABASE_URL=postgresql://drkiq:yourpassword@postgres:5432/drkiq?encoding=utf8&pool=5&timeout=5000
+    - CACHE_URL=redis://redis:6379/0
+    - JOB_WORKER_URL=redis://redis:6379/0
+
+sidekiq:
+  build: .
+  command: bundle exec sidekiq -C config/sidekiq.yml
+  links:
+    - postgres
+    - redis
+  volumes:
+    - .:/drkiq
+  environment:
+    - SECRET_TOKEN=a9c4853412c560983a37308a54c7164ea77c9b8c47d48b13d59c759d27ee07380e0521b4a480ada9f5de5451679332c23c27ec68dd8967b477f658c04a14c198
+    - WORKER_PROCESSES=1
+    - LISTEN_ON=0.0.0.0:8000
+    - DATABASE_URL=postgresql://drkiq:yourpassword@postgres:5432/drkiq?encoding=utf8&pool=5&timeout=5000
+    - CACHE_URL=redis://redis:6379/0
+    - JOB_WORKER_URL=redis://redis:6379/0
