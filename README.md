@@ -19,3 +19,8 @@
 ### to see created services --> kubectl get svc
 ### to see created configmap --> kubectl get configmaps
 ### to get the webapp link --> minikube service drkiq --url
+
+### to unset docker registery again 
+#### unset DOCKER_CERT_PATH
+#### unset DOCKER_TLS_VERIFY
+#### unset DOCKER_HOST
